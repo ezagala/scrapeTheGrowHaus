@@ -5,10 +5,11 @@ const fs = require('fs');
 const axios = require("axios");
 const cheerio = require('cheerio')
 const mongoose = require("mongoose");
+const moment = require('moment'); 
 
 const db = require("./models");
 
-const PORT = 3000;
+const PORT = 8080;
 
 // Initialize Express
 var app = express();
@@ -20,13 +21,14 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Use express.static to serve the public folder as a static directory
 app.use(express.static("public"));
 
+// This will connect to mLab 
 mongoose.connect("mongodb://localhost/intoTheGrowHaus");
 
 // Make sure that data does not already exist in the DB 
 
 app.get("/scrape", function(req, res) {
 
-    fs.readFile('JanToJulyTransactionHistory.html', function (err, data) {
+    fs.readFile('./reports/transactionHistory03-01to03-14.html', function (err, data) {
 
         const $ = cheerio.load(data);
 
@@ -46,7 +48,7 @@ app.get("/scrape", function(req, res) {
         // Loop through each transation
         $(".transaction").each(function (i, element) {
 
-            // Transaction that will be push to the DB
+             // Transaction that will be push to the DB
             const transaction = {
                 transID: null,
                 date: null,
@@ -109,7 +111,8 @@ app.get("/scrape", function(req, res) {
                             transaction.transID = path.html().slice(-5).trim();
                             break;
                         case date:
-                            transaction.date = path.html().slice(-14).trim();
+                            let isoDate = new Date(path.html().slice(-14).trim())
+                            transaction.date = isoDate.toISOString();
                             break;
                         case customer:
                             transaction.customer = path.html().slice(27).trim();
@@ -120,7 +123,6 @@ app.get("/scrape", function(req, res) {
                 }
             }
 
-            // Still a lil buggy 
             // Build out items and update transaction.description 
             function grabDescription(path) {
                 let item = {};
@@ -149,28 +151,35 @@ app.get("/scrape", function(req, res) {
             }
 
             // Add transcation to the DB if it doesn't already exist
-            db.Transaction
-                .update(
-                    { transID: transaction.transID },
-                    transaction,
-                    { upsert: true }
-                )
-                .then(newTrans => {
+            // db.Transaction
+            //     .update(
+            //         { transID: transaction.transID },
+            //         transaction,
+            //         { upsert: true }
+            //     )
+            //     .then(newTrans => {
                     
-                })
-                .catch(err => console.log(err)); 
-
-                transactionList.push(transaction.transID); 
+            //     })
+            //     .catch(err => console.log(err)); 
 
         })
 
         console.log(transactionList.join()); 
+
     });
 
+    db.Transaction
+        .find({})
+        .sort({date: 'descending'})
+        .then( res => {
+            // console.log(JSON.stringify(res)); 
+            console.log(res); 
+        })  
 })
 
 app.listen(PORT, function() {
     console.log("App running on port " + PORT + "!");
   });
 
-axios.get("http://localhost:3000/scrape").then(res => console.log("Scrape route hit.")); 
+axios.get("http://localhost:8080/scrape").then(res => console.log("Scrape route hit.")); 
+
