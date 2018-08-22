@@ -48,7 +48,7 @@ app.get("/scrape", function(req, res) {
         } 
         
         if (customerReportTitle === "Customers List Report") {
-            customerScrape();
+            customerScrape($, db);
         }
 
     })
