@@ -22,10 +22,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Use express.static to serve the public folder as a static directory
 app.use(express.static("public"));
 
-// This will connect to mLab 
 mongoose.connect("mongodb://localhost/intoTheGrowHaus");
-
-// Make sure that data does not already exist in the DB 
 
 app.get("/scrape", function(req, res) {
 

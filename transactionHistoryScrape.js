@@ -9,7 +9,7 @@ function transactionScrape($, db) {
     const transactionList = [];
 
     // Iterate through divs of interest and add transaction class
-    $('div[align="center"]').each(function (i, element) {
+    $('div[align="center"]').each(function(i, element){
 
         const target = $(this).children('div[align="center"]').children('table[width="661"]').children('tbody').children('tr').children('td').html();
 

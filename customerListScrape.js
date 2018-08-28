@@ -1,40 +1,55 @@
 /* 
-==========
-Psuedocode
-==========
+ - Iterate through all table rows 
 
-- ID the first horizontal rule <tr> 
-    - Iterate through the following <tr>s that only contain <hr>s and append a class 
+ - Add a class if the table row's first child element has valign=top && class=size11 attributes 
+ 
+ - Iterate through this new class 
 
-- Iterate through hr class 
-    - ID the <tr> element that directly follows the current <hr>
+    - Iterate through the <td>s of each instance of the class
+        - Store data of each <td> on the corresponding 
+          property of a customer object 
 
-- Iterate through this tailing <tr>, capturing the contents of each respective <td> (whether there is a nested <div> or not)
-    - Define and build corresponding customer object for each 
-        - Standardize phone number, if one exists, and define it on the current object 
-        - Define standardized contact value, full address, and value under the credit limit 
-            - Insert null if no value is listed in <td> 
+            - Standardize data, esp. phone, address 
 
-- Push customer object to the DB if it doesn't exit, update the record if it does exist  
+            - Store null if no data or data unrecognizable 
 
-==========
-Psuedocode
-==========
+ - Push customer object to the DB if it doesn't exit, update the record if it does exist 
 */
 
 function customerScrape($, db) {
+
     console.log(`
       ==============================
       The Customer Scrape is running
       ==============================
     `)
 
-    const firstHr = $('html').children('body').children('div').eq(2).children('table').children('tbody').children('tr').eq(2).children('td'); 
+    const customerList = []; 
 
-    firstHr.attr('id', 'first'); 
+    $('tr').each(function(i, element){
+        const tr = $(this).children().first(); 
+        if(tr.attr('valign') && tr.hasClass('size11')) {
+           $(this).children().each(function(j, child){
+               let customer = []; 
+               customer.push($(this).contents().text())
+               customerList.push(customer); 
+           })  
+        }
+    })
 
-    console.log("The attribute is this: ", $("#first").attr()); 
+    console.log("Customer list: ", customerList); 
+
+
+
+  
 
 }
 
 module.exports = customerScrape; 
+
+
+  // const leadHR = $('html').children('body').children('div').eq(2).children('table').children('tbody').children('tr').eq(2).children('td'); 
+
+    // leadHR.attr('id', 'leadHR'); 
+
+    // console.log("The attribute is this: ", $("#leadHR").attr()); 
